@@ -1,0 +1,13 @@
+terraform/terraform.tfvars
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+
+ansible/inventory/hosts.ini
+ansible/*.retry
+
+wireguard-clients/
+
+*.log
+.idea

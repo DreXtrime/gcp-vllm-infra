@@ -1,0 +1,18 @@
+# Copy this file to terraform.tfvars and fill in your values.
+
+project_id = "my-gcp-project"
+region     = "europe-west4"
+zone       = "europe-west4-a"
+
+instance_name       = "vllm-server"
+machine_type        = "a2-highgpu-1g"
+gpu_type            = "nvidia-tesla-a100"
+gpu_count           = 1
+boot_disk_size_gb   = 200
+
+ssh_user            = "ubuntu"
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+ssh_trusted_cidr    = "203.0.113.5/32"
+
+wireguard_port      = 51820
+running             = true

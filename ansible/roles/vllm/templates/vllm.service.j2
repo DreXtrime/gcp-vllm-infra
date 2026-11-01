@@ -1,0 +1,29 @@
+[Unit]
+Description=vLLM OpenAI-compatible inference server
+After=network.target docker.service wg-quick@wg0.service
+Requires=docker.service
+
+[Service]
+Restart=always
+RestartSec=10
+ExecStartPre=-/usr/bin/docker stop vllm
+ExecStartPre=-/usr/bin/docker rm vllm
+ExecStart=/usr/bin/docker run --rm \
+  --name vllm \
+  --runtime=nvidia \
+  --gpus all \
+  -v {{ vllm_model_cache_dir }}:/root/.cache/huggingface \
+  -e HF_TOKEN={{ huggingface_token }} \
+  -e VLLM_API_KEY={{ vllm_api_key }} \
+  -p {{ wireguard_server_ip }}:{{ vllm_port }}:{{ vllm_port }} \
+  vllm/vllm-openai:latest \
+    --model {{ vllm_model }} \
+    --host 0.0.0.0 \
+    --port {{ vllm_port }} \
+    --api-key {{ vllm_api_key }} \
+    --gpu-memory-utilization {{ vllm_gpu_memory_utilization }} \
+    --max-model-len {{ vllm_max_model_len }}
+ExecStop=/usr/bin/docker stop vllm
+
+[Install]
+WantedBy=multi-user.target

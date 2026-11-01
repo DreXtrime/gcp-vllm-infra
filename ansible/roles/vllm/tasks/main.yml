@@ -1,0 +1,32 @@
+---
+- name: Pull vLLM Docker image
+  community.docker.docker_image:
+    name: vllm/vllm-openai
+    tag: latest
+    source: pull
+  register: vllm_image_pull
+
+- name: Write vLLM systemd service file
+  template:
+    src: vllm.service.j2
+    dest: /etc/systemd/system/vllm.service
+    mode: "0644"
+    owner: root
+    group: root
+  notify: restart vllm
+
+- name: Reload systemd daemon
+  systemd:
+    daemon_reload: true
+
+- name: Enable and start vLLM service
+  systemd:
+    name: vllm
+    state: started
+    enabled: true
+
+- name: Restart vLLM if image was updated
+  systemd:
+    name: vllm
+    state: restarted
+  when: vllm_image_pull.changed

@@ -1,0 +1,91 @@
+---
+- name: Install WireGuard
+  apt:
+    name: wireguard
+    state: present
+    update_cache: true
+
+# Generate the server keypair once
+- name: Check if server private key already exists
+  stat:
+    path: /etc/wireguard/server_private.key
+  register: wg_privkey_stat
+
+- name: Generate server private key
+  command: wg genkey
+  register: wg_private_key_output
+  when: not wg_privkey_stat.stat.exists
+  no_log: true
+
+- name: Write server private key to disk
+  copy:
+    content: "{{ wg_private_key_output.stdout }}"
+    dest: /etc/wireguard/server_private.key
+    mode: "0600"
+    owner: root
+    group: root
+  when: not wg_privkey_stat.stat.exists
+  no_log: true
+
+- name: Read server private key
+  slurp:
+    src: /etc/wireguard/server_private.key
+  register: wg_privkey_b64
+  no_log: true
+
+- name: Derive server public key
+  command: "wg pubkey"
+  args:
+    stdin: "{{ wg_privkey_b64.content | b64decode | trim }}"
+  register: wg_pubkey_output
+  changed_when: false
+  no_log: true
+
+- name: Set key facts
+  set_fact:
+    wg_server_private_key: "{{ wg_privkey_b64.content | b64decode | trim }}"
+    wg_server_public_key: "{{ wg_pubkey_output.stdout | trim }}"
+  no_log: true
+
+- name: Enable IP forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    sysctl_set: true
+    state: present
+    reload: true
+
+- name: Write wg0.conf
+  template:
+    src: wg0.conf.j2
+    dest: /etc/wireguard/wg0.conf
+    mode: "0600"
+    owner: root
+    group: root
+  notify: restart wireguard
+
+- name: Enable and start WireGuard
+  systemd:
+    name: wg-quick@wg0
+    state: started
+    enabled: true
+    daemon_reload: true
+
+- name: Ensure local client config directory exists
+  file:
+    path: "{{ wireguard_client_configs_dir }}"
+    state: directory
+    mode: "0700"
+  delegate_to: localhost
+  become: false
+
+- name: Write client config files locally
+  template:
+    src: client.conf.j2
+    dest: "{{ wireguard_client_configs_dir }}/{{ item.name }}.conf"
+    mode: "0600"
+  delegate_to: localhost
+  become: false
+  loop: "{{ wireguard_peers }}"
+  loop_control:
+    label: "{{ item.name }}"

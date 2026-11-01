@@ -1,0 +1,14 @@
+[Interface]
+Address = {{ wireguard_server_ip }}/24
+ListenPort = {{ wireguard_port }}
+PrivateKey = {{ wg_server_private_key }}
+PostUp   = iptables -A FORWARD -i wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+
+{% for peer in wireguard_peers %}
+[Peer]
+# {{ peer.name }}
+PublicKey = {{ peer.public_key }}
+AllowedIPs = {{ peer.client_ip }}/32
+
+{% endfor %}

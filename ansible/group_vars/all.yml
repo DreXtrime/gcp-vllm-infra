@@ -1,0 +1,27 @@
+---
+# CUDA
+cuda_version: "12.4"
+cuda_ubuntu_codename: "ubuntu2204"
+
+# WireGuard
+wireguard_port: 51820
+wireguard_server_ip: "10.8.0.1"
+wireguard_subnet: "10.8.0.0/24"
+
+wireguard_peers:
+  - name: "laptop"
+    public_key: "REPLACE_WITH_CLIENT_PUBLIC_KEY_BASE64=="
+    client_ip: "10.8.0.2"
+
+wireguard_client_configs_dir: "{{ playbook_dir }}/../wireguard-clients"
+
+# vLLM
+vllm_model: "REPLACE_WITH_HF_MODEL_ID"
+vllm_port: 8000
+vllm_gpu_memory_utilization: 0.90
+vllm_max_model_len: 8192
+vllm_model_cache_dir: "/data/model-cache"
+
+# Secrets
+vllm_api_key: "REPLACE_WITH_A_STRONG_RANDOM_KEY"
+huggingface_token: "REPLACE_WITH_HF_TOKEN"

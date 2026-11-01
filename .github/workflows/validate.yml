@@ -1,0 +1,63 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  terraform:
+    name: Terraform fmt & validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: "~1.5"
+
+      - name: terraform fmt
+        working-directory: terraform
+        run: terraform fmt -check -recursive
+
+      - name: terraform init (no backend)
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: terraform validate
+        working-directory: terraform
+        run: terraform validate
+
+  ansible:
+    name: Ansible lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.11"
+
+      - name: Install ansible-lint
+        run: pip install ansible-lint
+
+      - name: Install required Ansible collections
+        run: ansible-galaxy collection install community.docker
+
+      - name: Run ansible-lint
+        working-directory: ansible
+        run: ansible-lint --profile basic site.yml
+
+  secrets-scan:
+    name: Check for committed secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Scan with truffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --only-verified

@@ -1,0 +1,21 @@
+# WireGuard client config for: {{ item.name }}
+# Import this file into any WireGuard client (iOS, Android, macOS, Linux).
+# Keep this file private — it grants VPN access.
+#
+# The PrivateKey below is a PLACEHOLDER.
+# Replace it with the private key that corresponds to this peer's public key:
+#   {{ item.public_key }}
+
+[Interface]
+Address = {{ item.client_ip }}/32
+# Paste your client private key here:
+PrivateKey = REPLACE_WITH_CLIENT_PRIVATE_KEY
+DNS = 1.1.1.1
+
+[Peer]
+PublicKey = {{ wg_server_public_key }}
+Endpoint = {{ ansible_host }}:{{ wireguard_port }}
+# Route only VPN traffic through the tunnel (split tunnel).
+# Change to 0.0.0.0/0 to route all traffic through the server.
+AllowedIPs = {{ wireguard_subnet }}
+PersistentKeepalive = 25

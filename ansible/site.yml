@@ -1,0 +1,10 @@
+---
+- name: Configure vLLM inference server
+  hosts: vllm_servers
+  become: true
+
+  roles:
+    - common
+    - cuda
+    - wireguard
+    - vllm

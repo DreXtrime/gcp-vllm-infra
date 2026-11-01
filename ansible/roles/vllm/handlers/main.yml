@@ -1,0 +1,5 @@
+---
+- name: restart vllm
+  systemd:
+    name: vllm
+    state: restarted
