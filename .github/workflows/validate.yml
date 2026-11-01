@@ -43,7 +43,7 @@ jobs:
         run: pip install ansible-lint
 
       - name: Install required Ansible collections
-        run: ansible-galaxy collection install community.docker
+        run: ansible-galaxy collection install -r ansible/requirements.yml
 
       - name: Run ansible-lint
         working-directory: ansible

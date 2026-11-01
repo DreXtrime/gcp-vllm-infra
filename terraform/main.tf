@@ -85,10 +85,10 @@ resource "google_compute_instance" "vllm" {
     on_host_maintenance = var.gpu_count > 0 ? "TERMINATE" : "MIGRATE"
   }
 
-  dynamic guest_accelerator {
+  dynamic "guest_accelerator" {
     for_each = var.gpu_count > 0 ? [1] : []
     content {
-      type = var.gpu_type
+      type  = var.gpu_type
       count = var.gpu_count
     }
   }

@@ -3,7 +3,7 @@
 
 - name: Check if nvidia-smi is already functional
   command: nvidia-smi
-  register: nvidia_smi_check
+  register: cuda_smi_check
   changed_when: false
   failed_when: false
 
@@ -12,26 +12,25 @@
     url: "https://developer.download.nvidia.com/compute/cuda/repos/{{ cuda_ubuntu_codename }}/x86_64/cuda-keyring_1.1-1_all.deb"
     dest: /tmp/cuda-keyring.deb
     mode: "0644"
-  when: nvidia_smi_check.rc != 0
+  when: cuda_smi_check.rc != 0
 
 - name: Install NVIDIA CUDA keyring package
   apt:
     deb: /tmp/cuda-keyring.deb
-  when: nvidia_smi_check.rc != 0
+  when: cuda_smi_check.rc != 0
 
 - name: Update apt cache after adding CUDA repo
   apt:
     update_cache: true
-  when: nvidia_smi_check.rc != 0
+  when: cuda_smi_check.rc != 0
 
-# cuda-drivers and toolkit
 - name: Install CUDA drivers and toolkit
   apt:
     name:
       - "cuda-drivers"
       - "cuda-toolkit-{{ cuda_version | replace('.', '-') }}"
     state: present
-  when: nvidia_smi_check.rc != 0
+  when: cuda_smi_check.rc != 0
   register: cuda_installed
 
 - name: Install NVIDIA Container Toolkit repository keyring
@@ -67,9 +66,9 @@
 
 - name: Verify nvidia-smi works after install
   command: nvidia-smi
-  register: nvidia_smi_result
+  register: cuda_smi_result
   changed_when: false
 
 - name: Print nvidia-smi output
   debug:
-    var: nvidia_smi_result.stdout_lines
+    var: cuda_smi_result.stdout_lines
