@@ -19,6 +19,8 @@ Everything is parameterised, the playbook is idempotent, and the whole thing fro
 | VPN            | WireGuard       |
 | OS             | Ubuntu 22.04    |
 
+![diagram.drawio.svg](docs/diagram.drawio.svg)
+
 ---
 
 ## Prerequisites
